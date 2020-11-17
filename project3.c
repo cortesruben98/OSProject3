@@ -1,14 +1,14 @@
 // this is our proj3 file
-#include <iostream>
+// #include <iostream>
 
-using namespace std;
+//using namespace std;
 
 /*void exit(){
 	//safely exit program
 	//free up resources
 }*/
 
-// main code for this project  
+// main code for this project
 
 // while(command != "exit"){
 // 	print("$ ");
@@ -56,7 +56,14 @@ int main()
 		tokenlist *tokens = get_tokens(input);
 		for (int i = 0; i < tokens->size; i++) {
 			printf("token %d: (%s)\n", i, tokens->items[i]);
+			if(tokens->items[0] == "exit"){
+				break;
+			}
+			else if(tokens->items[0] == "info"){
+				//do stuff
+			}
 		}
+
 
 		free(input);
 		free_tokens(tokens);
