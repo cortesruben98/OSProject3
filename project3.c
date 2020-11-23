@@ -1,6 +1,8 @@
 // this is our proj3 file
-// #include <iostream>
-
+//#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 //using namespace std;
 
 /*void exit(){
@@ -25,14 +27,24 @@
 // }
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 typedef struct {
 	int size;
 	char **items;
 } tokenlist;
+
+typedef struct {
+	int BPB_BytsPerSec;
+	int BPB_SecPerClus;
+ 	int BPB_RsvdSecCnt;
+	int BPB_NumFATs;
+	int BPB_FATSz32;
+	int BPB_RootClus;
+	int BPB_TotSec32;
+	FILE * a;
+
+} fileinfo
+
+void info();
 
 char *get_input(void);
 tokenlist *get_tokens(char *input);
@@ -43,8 +55,15 @@ void free_tokens(tokenlist *tokens);
 
 int main()
 {
+	f32.a = fopen("fat32.img", "rb"); //idk if rb is right
+	int i; 
+	fileinfo pt[4];
+    
+    fseek(in, 0x1BE, SEEK_SET); // go to partition table start
+    fread(pt, sizeof(fileinfo), 4, in); // read all four entries
+   
 	while (1) {
-		printf("> ");
+		printf("$ ");
 
 		/* input contains the whole command
 		 * tokens contains substrings from input split by spaces
@@ -60,7 +79,7 @@ int main()
 				break;
 			}
 			else if(tokens->items[0] == "info"){
-				//do stuff
+				info(f32);
 			}
 		}
 
@@ -70,6 +89,16 @@ int main()
 	}
 
 	return 0;
+}
+
+void info(){
+	printf("bytes per sector: %d\n", f32.BPB_BytsPerSec);
+	printf("sectors per cluster: %d\n", f32.BPB_SecPerClus);;
+	printf("reseverd sector count: %d\n", f32.BPB_RsvdSecCnt);
+	printf("number of FATs: %d\n", f32.BPB_NumFATs);
+	printf("total sectors: %d\n", f32.BPB_TotSec32);
+	printf("FATsize: %d\n", f32.BPB_FATSz32);
+	printf("root cluster: %d\n", f32.BPB_RootClus ); 
 }
 
 tokenlist *new_tokenlist(void)
