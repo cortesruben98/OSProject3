@@ -98,7 +98,37 @@ void info(){
 	printf("number of FATs: %d\n", f32.BPB_NumFATs);
 	printf("total sectors: %d\n", f32.BPB_TotSec32);
 	printf("FATsize: %d\n", f32.BPB_FATSz32);
-	printf("root cluster: %d\n", f32.BPB_RootClus ); 
+	printf("root cluster: %d\n", f32.BPB_RootClus );
+}
+
+void FileSize(string filename){
+	//print error if filename not in cwd
+
+
+	//print in bytes
+}
+
+
+void lsFunc(unsigned short cluster, string dirname){
+	int i, j, k;
+	char dirname[12];
+	DIR * cdir;	//current directory
+
+	unsigned short Sector_offset = (cluster*4);
+	unsigned short next_cluster;
+
+	/*first sector we are working with would be where data sector starts + (cluster we are at - 2)
+	* multiplied by Sectors per Cluster
+	*/
+	//unsigned short firstSector =
+
+	//first we read the sector in each cluster
+	for(i = 0; i < SectorPerCluster; i++){
+		//and then every dir name in each sector
+		for(j = 0; j < BytesPerSector/32; j++){
+
+		}
+	}
 }
 
 tokenlist *new_tokenlist(void)
