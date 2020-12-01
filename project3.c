@@ -1,8 +1,12 @@
 // this is our proj3 file
 //#include <iostream>
+#define _XOPEN_SOURCE 500
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
 //using namespace std;
 
 /*void exit(){
@@ -33,16 +37,19 @@ typedef struct {
 } tokenlist;
 
 typedef struct {
-	int BPB_BytsPerSec;
+	int BPB_BytesPerSec;
 	int BPB_SecPerClus;
  	int BPB_RsvdSecCnt;
 	int BPB_NumFATs;
 	int BPB_FATSz32;
 	int BPB_RootClus;
 	int BPB_TotSec32;
-	FILE * a;
+	int fileID;
 
-} fileinfo
+} fileinfo;
+
+
+fileinfo f32;
 
 void info();
 
@@ -55,27 +62,28 @@ void free_tokens(tokenlist *tokens);
 
 int main()
 {
-	struct fileinfo f32;
-	f32.fileID = open("fat32.img", O_RDWR); 
-	int i; 
-	buffer = malloc(32);
-	i = read(f32.fileID, buffer, 2, 11); //i = number of bytes read 
-	//flip it
-    f32.BPB_BytesPerSector = buffer;
 	
-	i = read(f32.fileID, buffer, 1, 13); //i = number of bytes read 
+	f32.fileID = open("fat32.img", O_RDWR); 
+	ssize_t i; 
+	char buffer[32];
+	
+	i = pread(f32.fileID, buffer, 2, 11); //i = number of bytes read 
+	//flip it
+    f32.BPB_BytesPerSec = buffer;
+	
+	i = pread(f32.fileID, buffer, 1, 13); //i = number of bytes read 
 	//flip it
     f32.BPB_SecPerClus = buffer;
 
-    i = read(f32.fileID, buffer, 2, 14); //i = number of bytes read 
+    i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read 
 	//flip it
     f32.BPB_RsvdSecCnt = buffer;
 
-    i = read(f32.fileID, buffer, 4, 32); //i = number of bytes read 
+    i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
 	//flip it
     f32.BPB_TotSec32= buffer;
 
-    i = read(f32.fileID, buffer, 4, 44); //i = number of bytes read 
+    i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read 
 	//flip it
     f32.BPB_RootClus = buffer;
 
@@ -112,7 +120,7 @@ int main()
 }
 
 void info(){
-	printf("bytes per sector: %d\n", f32.BPB_BytsPerSec);
+	printf("bytes per sector: %d\n", f32.BPB_BytesPerSec);
 	printf("sectors per cluster: %d\n", f32.BPB_SecPerClus);;
 	printf("reseverd sector count: %d\n", f32.BPB_RsvdSecCnt);
 	printf("number of FATs: %d\n", f32.BPB_NumFATs);
