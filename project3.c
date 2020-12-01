@@ -70,23 +70,28 @@ int main()
 	
 	i = pread(f32.fileID, buffer, 2, 11); //i = number of bytes read 
 	//flip it
-    f32.BPB_BytesPerSec = buffer;
+	int buffernumber = atoi(buffer);
+    f32.BPB_BytesPerSec = buffernumber;
 	
 	i = pread(f32.fileID, buffer, 1, 13); //i = number of bytes read 
 	//flip it
-    f32.BPB_SecPerClus = buffer;
+	buffernumber = atoi(buffer);
+    f32.BPB_SecPerClus = buffernumber;
 
     i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read 
 	//flip it
-    f32.BPB_RsvdSecCnt = buffer;
+	buffernumber = atoi(buffer);
+    f32.BPB_RsvdSecCnt = buffernumber;
 
     i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
 	//flip it
-    f32.BPB_TotSec32= buffer;
+	buffernumber = atoi(buffer);
+    f32.BPB_TotSec32= buffernumber;
 
     i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read 
 	//flip it
-    f32.BPB_RootClus = buffer;
+	buffernumber = atoi(buffer);
+    f32.BPB_RootClus = buffernumber;
 
 
 	while (1) {
@@ -106,7 +111,7 @@ int main()
 				break;
 			}
 			else if(tokens->items[0] == "info"){
-				info(f32);
+				info();
 			}
 		}
 
@@ -129,7 +134,7 @@ void info(){
 	printf("root cluster: %d\n", f32.BPB_RootClus );
 }
 
-void FileSize(string filename){
+void FileSize(char * filename){
 	//print error if filename not in cwd
 
 
