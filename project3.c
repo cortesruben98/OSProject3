@@ -144,8 +144,8 @@ void FileSize(char * filename){
 
 void lsFunc(unsigned short cluster, char * dirname){
 	int i, j, k;
-	char dirname[12];
-	DIR * cdir;	//current directory
+	//char dirname[12];
+	//current directory
 
 	unsigned short Sector_offset = (cluster*4);
 	unsigned short next_cluster;
@@ -156,9 +156,9 @@ void lsFunc(unsigned short cluster, char * dirname){
 	//unsigned short firstSector =
 
 	//first we read the sector in each cluster
-	for(i = 0; i < SectorPerCluster; i++){
+	for(i = 0; i < f32.BPB_SecPerClus; i++){
 		//and then every dir name in each sector
-		for(j = 0; j < BytesPerSector/32; j++){
+		for(j = 0; j < f32.BPB_BytesPerSec/32; j++){
 
 		}
 	}
