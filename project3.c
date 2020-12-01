@@ -33,7 +33,7 @@ typedef struct {
 } tokenlist;
 
 typedef struct {
-	int BPB_BytsPerSec;
+	int BPB_BytesPerSector;	//ask teresa
 	int BPB_SecPerClus;
  	int BPB_RsvdSecCnt;
 	int BPB_NumFATs;
@@ -42,7 +42,8 @@ typedef struct {
 	int BPB_TotSec32;
 	FILE * a;
 
-} fileinfo
+} fileinfo;
+
 
 void info();
 
@@ -55,36 +56,36 @@ void free_tokens(tokenlist *tokens);
 
 int main()
 {
+	fileinfo f32;
 	f32.a = fopen("fat32.img", "rb"); //idk if rb is right
-	int i;
+	//int i;
 	fileinfo pt[4];
 
-    fseek(in, 0x1BE, SEEK_SET); // go to partition table start
-    fread(pt, sizeof(fileinfo), 4, in); // read all four entries
+    	fseek(f32.a, 0x1BE, SEEK_SET); // go to partition table start
+    	fread(pt, sizeof(fileinfo), 4, f32.a); // read all four entries
 
-	struct fileinfo f32;
-	f32.fileID = open("fat32.img", O_RDWR);
+	//f32.fileID = open("fat32.img", O_RDWR);
 	int i;
-	buffer = malloc(32);
-	i = read(f32.fileID, buffer, 2, 11); //i = number of bytes read
+	unsigned char * buffer = (unsigned char *)malloc(32);
+	i = read(f32.a, buffer, 2, 11); //i = number of bytes read
 	//flip it
-    f32.BPB_BytesPerSector = buffer;
+	f32.BPB_BytesPerSector = buffer;
 
-	i = read(f32.fileID, buffer, 1, 13); //i = number of bytes read
+	i = read(f32.a, buffer, 1, 13); //i = number of bytes read
 	//flip it
-    f32.BPB_SecPerClus = buffer;
+	f32.BPB_SecPerClus = sizeof(buffer);
 
-    i = read(f32.fileID, buffer, 2, 14); //i = number of bytes read
+	i = read(f32.a, buffer, 2, 14); //i = number of bytes read
 	//flip it
-    f32.BPB_RsvdSecCnt = buffer;
+	f32.BPB_RsvdSecCnt = sizeof(buffer);
 
-    i = read(f32.fileID, buffer, 4, 32); //i = number of bytes read
+	i = read(f32.a, buffer, 4, 32); //i = number of bytes read
 	//flip it
-    f32.BPB_TotSec32= buffer;
+	f32.BPB_TotSec32= sizeof(buffer);
 
-    i = read(f32.fileID, buffer, 4, 44); //i = number of bytes read
+    	i = read(f32.a, buffer, 4, 44); //i = number of bytes read
 	//flip it
-    f32.BPB_RootClus = buffer;
+    	f32.BPB_RootClus = sizeof(buffer);
 
 
 
@@ -136,7 +137,7 @@ void FileSize(string filename){
 }
 
 
-void lsFunc(unsigned short cluster, string dirname){
+void lsFunc(unsigned short cluster, char * dirname){
 	int i, j, k;
 	char dirname[12];
 	DIR * cdir;	//current directory
