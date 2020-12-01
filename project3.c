@@ -49,7 +49,9 @@ typedef struct {
 } fileinfo;
 
 
+
 fileinfo f32;
+
 
 void info();
 
@@ -61,8 +63,7 @@ void add_token(tokenlist *tokens, char *item);
 void free_tokens(tokenlist *tokens);
 
 int main()
-{
-	
+{	
 	f32.fileID = open("fat32.img", O_RDWR); 
 	ssize_t i; 
 	char buffer[32];
@@ -87,9 +88,7 @@ int main()
 	//flip it
     f32.BPB_RootClus = buffer;
 
-   
 
-   
 	while (1) {
 		printf("$ ");
 
@@ -110,6 +109,7 @@ int main()
 				info(f32);
 			}
 		}
+
 
 
 		free(input);
@@ -137,7 +137,7 @@ void FileSize(string filename){
 }
 
 
-void lsFunc(unsigned short cluster, string dirname){
+void lsFunc(unsigned short cluster, char * dirname){
 	int i, j, k;
 	char dirname[12];
 	DIR * cdir;	//current directory
@@ -234,6 +234,5 @@ void free_tokens(tokenlist *tokens)
 }
 
 /////////read function/////////
-ssize_t read(int fildes, void *buf, size_t nbyte, off_t offset){
+//ssize_t read(int fildes, void *buf, size_t nbyte, off_t offset){
 
-}
