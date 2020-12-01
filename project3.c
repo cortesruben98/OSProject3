@@ -56,12 +56,12 @@ void free_tokens(tokenlist *tokens);
 int main()
 {
 	f32.a = fopen("fat32.img", "rb"); //idk if rb is right
-	int i; 
+	int i;
 	fileinfo pt[4];
-    
+
     fseek(in, 0x1BE, SEEK_SET); // go to partition table start
     fread(pt, sizeof(fileinfo), 4, in); // read all four entries
-   
+
 	while (1) {
 		printf("$ ");
 
@@ -82,6 +82,7 @@ int main()
 				info(f32);
 			}
 		}
+
 
 
 		free(input);
@@ -206,6 +207,5 @@ void free_tokens(tokenlist *tokens)
 }
 
 /////////read function/////////
-ssize_t read(int fildes, void *buf, size_t nbyte, off_t offset){
+//ssize_t read(int fildes, void *buf, size_t nbyte, off_t offset){
 
-}
