@@ -59,33 +59,39 @@ void free_tokens(tokenlist *tokens);
 
 int main()
 {
+	f32.a = fopen("fat32.img", "rb"); //idk if rb is right
+	int i;
+	fileinfo pt[4];
+
+    fseek(in, 0x1BE, SEEK_SET); // go to partition table start
+    fread(pt, sizeof(fileinfo), 4, in); // read all four entries
+
 	struct fileinfo f32;
-	f32.fileID = open("fat32.img", O_RDWR); 
-	int i; 
+	f32.fileID = open("fat32.img", O_RDWR);
+	int i;
 	buffer = malloc(32);
-	i = read(f32.fileID, buffer, 2, 11); //i = number of bytes read 
+	i = read(f32.fileID, buffer, 2, 11); //i = number of bytes read
 	//flip it
     f32.BPB_BytesPerSector = buffer;
-	
-	i = read(f32.fileID, buffer, 1, 13); //i = number of bytes read 
+
+	i = read(f32.fileID, buffer, 1, 13); //i = number of bytes read
 	//flip it
     f32.BPB_SecPerClus = buffer;
 
-    i = read(f32.fileID, buffer, 2, 14); //i = number of bytes read 
+    i = read(f32.fileID, buffer, 2, 14); //i = number of bytes read
 	//flip it
     f32.BPB_RsvdSecCnt = buffer;
 
-    i = read(f32.fileID, buffer, 4, 32); //i = number of bytes read 
+    i = read(f32.fileID, buffer, 4, 32); //i = number of bytes read
 	//flip it
     f32.BPB_TotSec32= buffer;
 
-    i = read(f32.fileID, buffer, 4, 44); //i = number of bytes read 
+    i = read(f32.fileID, buffer, 4, 44); //i = number of bytes read
 	//flip it
     f32.BPB_RootClus = buffer;
 
-   
 
-   
+
 	while (1) {
 		printf("$ ");
 
@@ -106,6 +112,7 @@ int main()
 				info(f32);
 			}
 		}
+
 
 
 		free(input);
@@ -237,6 +244,5 @@ void free_tokens(tokenlist *tokens)
 }
 
 /////////read function/////////
-ssize_t read(int fildes, void *buf, size_t nbyte, off_t offset){
+//ssize_t read(int fildes, void *buf, size_t nbyte, off_t offset){
 
-}
