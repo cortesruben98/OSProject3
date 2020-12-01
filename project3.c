@@ -30,6 +30,10 @@
 // 	}
 // }
 
+int CWDFAT_OFFSET;
+char * CWD_NAME[12];
+
+
 
 typedef struct {
 	int size;
@@ -137,8 +141,14 @@ void info(){
 void FileSize(char * filename){
 	//print error if filename not in cwd
 
+// loop through CWD 32 bytes each directory content entry 
+	//if filename matches 
+		//if it is a file 
+			//print the size in bytes
+		//else 
+			//print " this isnt a file fool"
+	//file not found 
 
-	//print in bytes
 }
 
 
