@@ -136,7 +136,7 @@ void info(){
 void FileSize(char * filename){
 	//print error if filename not in cwd
 
-// loop through CWD
+// loop through CWD 32 bytes each directory content entry 
 	//if filename matches 
 		//if it is a file 
 			//print the size in bytes
@@ -144,7 +144,6 @@ void FileSize(char * filename){
 			//print " this isnt a file fool"
 	//file not found 
 
-	//print in bytes
 }
 
 
