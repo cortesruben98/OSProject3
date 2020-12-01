@@ -26,6 +26,10 @@
 // 	}
 // }
 
+int CWDFAT_OFFSET;
+char * CWD_NAME[12];
+
+
 
 typedef struct {
 	int size;
@@ -121,15 +125,22 @@ void info(){
 	printf("root cluster: %d\n", f32.BPB_RootClus );
 }
 
-void FileSize(string filename){
+void FileSize(char * filename){
 	//print error if filename not in cwd
 
+// loop through CWD
+	//if filename matches 
+		//if it is a file 
+			//print the size in bytes
+		//else 
+			//print " this isnt a file fool"
+	//file not found 
 
 	//print in bytes
 }
 
 
-void lsFunc(unsigned short cluster, string dirname){
+void lsFunc(unsigned short cluster, char * dirname){
 	int i, j, k;
 	char dirname[12];
 	DIR * cdir;	//current directory
