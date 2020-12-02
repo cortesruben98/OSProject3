@@ -52,7 +52,10 @@ typedef struct {
 
 } fileinfo;
 
-
+typedef struct {
+	unsigned char DIR_name[12];
+	unsigned char DIR_attr;
+} direntry
 
 fileinfo f32;
 
@@ -75,27 +78,27 @@ int main()
 	i = pread(f32.fileID, buffer, 2, 11); //i = number of bytes read 
 	//flip it
 	int buffernumber = atoi(buffer);
-    f32.BPB_BytesPerSec = buffernumber;
+	f32.BPB_BytesPerSec = buffernumber;
 	
 	i = pread(f32.fileID, buffer, 1, 13); //i = number of bytes read 
 	//flip it
 	buffernumber = atoi(buffer);
-    f32.BPB_SecPerClus = buffernumber;
+	f32.BPB_SecPerClus = buffernumber;
 
-    i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read 
+        i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read
 	//flip it
 	buffernumber = atoi(buffer);
-    f32.BPB_RsvdSecCnt = buffernumber;
+        f32.BPB_RsvdSecCnt = buffernumber;
 
-    i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
+        i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
 	//flip it
 	buffernumber = atoi(buffer);
-    f32.BPB_TotSec32= buffernumber;
+        f32.BPB_TotSec32= buffernumber;
 
-    i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read 
+        i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read
 	//flip it
 	buffernumber = atoi(buffer);
-    f32.BPB_RootClus = buffernumber;
+        f32.BPB_RootClus = buffernumber;
 
 
 	while (1) {
@@ -129,6 +132,7 @@ int main()
 }
 
 void info(){
+	printf("we are here");
 	printf("bytes per sector: %d\n", f32.BPB_BytesPerSec);
 	printf("sectors per cluster: %d\n", f32.BPB_SecPerClus);;
 	printf("reseverd sector count: %d\n", f32.BPB_RsvdSecCnt);
@@ -140,14 +144,18 @@ void info(){
 
 void FileSize(char * filename){
 	//print error if filename not in cwd
+	if(filename == NULL)
+		printf("This isn't a file fool");
+// loop through CWD 32 bytes each directory content entry start at root dir
+	char name;
+	char file[sizeof(filename)];
 
-// loop through CWD 32 bytes each directory content entry 
-	//if filename matches 
-		//if it is a file 
+	//if filename matches
+		//if it is a file
 			//print the size in bytes
-		//else 
+		//else
 			//print " this isnt a file fool"
-	//file not found 
+	//file not found
 
 }
 
