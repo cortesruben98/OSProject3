@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <byteswap.h>
 //using namespace std;
 
 /*void exit(){
@@ -68,6 +69,7 @@ tokenlist *get_tokens(char *input);
 tokenlist *new_tokenlist(void);
 void add_token(tokenlist *tokens, char *item);
 void free_tokens(tokenlist *tokens);
+int flipit(int origional);
 
 int main()
 {	
@@ -76,27 +78,34 @@ int main()
 	char buffer[32];
 	
 	i = pread(f32.fileID, buffer, 2, 11); //i = number of bytes read 
-	//flip it
 	int buffernumber = atoi(buffer);
 	f32.BPB_BytesPerSec = buffernumber;
+	__bswap_32 (buffernumber);
+    f32.BPB_BytesPerSec = buffernumber;
 	
 	i = pread(f32.fileID, buffer, 1, 13); //i = number of bytes read 
-	//flip it
+	__bswap_32 (buffernumber);
 	buffernumber = atoi(buffer);
 	f32.BPB_SecPerClus = buffernumber;
 
         i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read
 	//flip it
+    i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read 
+	__bswap_32 (buffernumber);
 	buffernumber = atoi(buffer);
         f32.BPB_RsvdSecCnt = buffernumber;
 
         i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
 	//flip it
+    i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
+	__bswap_32 (buffernumber);
 	buffernumber = atoi(buffer);
         f32.BPB_TotSec32= buffernumber;
 
         i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read
 	//flip it
+    i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read 
+	__bswap_32 (buffernumber);
 	buffernumber = atoi(buffer);
         f32.BPB_RootClus = buffernumber;
 
@@ -142,6 +151,8 @@ void info(){
 	printf("root cluster: %d\n", f32.BPB_RootClus );
 }
 
+int flipit(int origional); 
+ 
 void FileSize(char * filename){
 	//print error if filename not in cwd
 	if(filename == NULL)
