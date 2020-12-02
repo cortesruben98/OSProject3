@@ -53,15 +53,30 @@ typedef struct {
 
 } fileinfo;
 
+struct DIR_Entry {
+	unsigned char DIR_Name[11];
+	unsigned char DIR_Attr; //1 byte
+ 	unsigned char DIR_NTRes;
+	unsigned char DIR_CrtTimeTenth;
+	unsigned short DIR_CrtTime; //2 byte
+	unsigned short DIR_CrtDate;
+	unsigned short DIR_LstAccDate;
+	unsigned short DIR_FstClusHI;
+	unsigned short DIR_WrtTime;
+	unsigned short DIR_WrtDate;
+	unsigned short DIR_FstClusLO;
+	unsigned int DIR_FileSize; //4 byte 
 
+}  __attribute__((packed));
 
 fileinfo f32;
 
-
+//test
 void info();
 
 char *get_input(void);
 tokenlist *get_tokens(char *input);
+
 
 tokenlist *new_tokenlist(void);
 void add_token(tokenlist *tokens, char *item);
@@ -70,11 +85,12 @@ int flipit(int origional);
 
 int main()
 {	
-	f32.fileID = open("fat32.img", O_RDWR); 
+	f32.fileID = open("fat32.img", O_RDWR ); 
 	ssize_t i; 
 	char buffer[32];
+	unsigned char temp;
 	
-	i = pread(f32.fileID, buffer, 2, 11); //i = number of bytes read 
+	i = pread(f32.fileID, temp, 1, 11); //i = number of bytes read 
 	int buffernumber = atoi(buffer);
 	__bswap_32 (buffernumber);
     f32.BPB_BytesPerSec = buffernumber;
@@ -113,10 +129,10 @@ int main()
 		tokenlist *tokens = get_tokens(input);
 		for (int i = 0; i < tokens->size; i++) {
 			printf("token %d: (%s)\n", i, tokens->items[i]);
-			if(tokens->items[0] == "exit"){
+			if(!strcmp(tokens->items[0], "exit")){
 				break;
 			}
-			else if(tokens->items[0] == "info"){
+			else if(!strcmp(tokens->items[0], "info")){
 				info();
 			}
 		}
@@ -158,8 +174,8 @@ void FileSize(char * filename){
 
 void lsFunc(unsigned short cluster, char * dirname){
 	int i, j, k;
-	char dirname[12];
-	DIR * cdir;	//current directory
+	char temp_dirname[12];
+	// DIR * cdir;	//current directory
 
 	unsigned short Sector_offset = (cluster*4);
 	unsigned short next_cluster;
@@ -170,12 +186,12 @@ void lsFunc(unsigned short cluster, char * dirname){
 	//unsigned short firstSector =
 
 	//first we read the sector in each cluster
-	for(i = 0; i < SectorPerCluster; i++){
+	// for(i = 0; i < SectorPerCluster; i++){
 		//and then every dir name in each sector
-		for(j = 0; j < BytesPerSector/32; j++){
+		// for(j = 0; j < BytesPerSector/32; j++){
 
-		}
-	}
+	// 	}
+	// }
 }
 
 tokenlist *new_tokenlist(void)
