@@ -53,15 +53,31 @@ typedef struct {
 
 } fileinfo;
 
+struct DIR_Entry {
+	unsigned char DIR_Name[11];
+	unsigned char DIR_Attr; //1 byte
+ 	unsigned char DIR_NTRes;
+	unsigned char DIR_CrtTimeTenth;
+	unsigned short DIR_CrtTime; //2 byte
+	unsigned short DIR_CrtDate;
+	unsigned short DIR_LstAccDate;
+	unsigned short DIR_FstClusHI;
+	unsigned short DIR_WrtTime;
+	unsigned short DIR_WrtDate;
+	unsigned short DIR_FstClusLO;
+	unsigned int DIR_FileSize; //4 byte 
+
+}  __attribute__((packed));
 
 
 fileinfo f32;
 
-
+//test
 void info();
 
 char *get_input(void);
 tokenlist *get_tokens(char *input);
+
 
 tokenlist *new_tokenlist(void);
 void add_token(tokenlist *tokens, char *item);
@@ -70,6 +86,7 @@ int flipit(int origional);
 
 int main()
 {	
+
 	f32.fileID = open("fat32.img", O_RDWR); 
 	printf("file ID: %d\n", f32.fileID);
 	ssize_t i; 
@@ -81,26 +98,33 @@ int main()
 	int buffernumber = atoi(buffer); //to int
 	__bswap_32 (buffernumber); //flip
     f32.BPB_BytesPerSec = buffernumber;// saves 
+
 	
 	i = pread(f32.fileID, buffer, 1, 13); //i = number of bytes read 
 	__bswap_32 (buffernumber);
 	buffernumber = atoi(buffer);
-    f32.BPB_SecPerClus = buffernumber;
+	f32.BPB_SecPerClus = buffernumber;
 
+        i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read
+	//flip it
     i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read 
 	__bswap_32 (buffernumber);
 	buffernumber = atoi(buffer);
-    f32.BPB_RsvdSecCnt = buffernumber;
+        f32.BPB_RsvdSecCnt = buffernumber;
 
+        i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
+	//flip it
     i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
 	__bswap_32 (buffernumber);
 	buffernumber = atoi(buffer);
-    f32.BPB_TotSec32= buffernumber;
+        f32.BPB_TotSec32= buffernumber;
 
+        i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read
+	//flip it
     i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read 
 	__bswap_32 (buffernumber);
 	buffernumber = atoi(buffer);
-    f32.BPB_RootClus = buffernumber;
+        f32.BPB_RootClus = buffernumber;
 
 
 	while (1) {
@@ -116,12 +140,13 @@ int main()
 		tokenlist *tokens = get_tokens(input);
 		for (int i = 0; i < tokens->size; i++) {
 			printf("token %d: (%s)\n", i, tokens->items[i]);
-			if(!strcmp(tokens->items[0], "exit")){\
+
+			if(!strcmp(tokens->items[0], "exit")){
 
 				break;
 			}
 			else if(!strcmp(tokens->items[0], "info")){
-				
+
 				info();
 			}
 		}
@@ -136,6 +161,7 @@ int main()
 }
 
 void info(){
+	printf("we are here");
 	printf("bytes per sector: %d\n", f32.BPB_BytesPerSec);
 	printf("sectors per cluster: %d\n", f32.BPB_SecPerClus);;
 	printf("reseverd sector count: %d\n", f32.BPB_RsvdSecCnt);
@@ -149,22 +175,29 @@ int flipit(int origional);
  
 void FileSize(char * filename){
 	//print error if filename not in cwd
+	if(filename == NULL)
+		printf("This isn't a file fool");
+// loop through CWD 32 bytes each directory content entry start at root dir
+	char name;
+	char file[sizeof(filename)];
 
-// loop through CWD 32 bytes each directory content entry 
-	//if filename matches 
-		//if it is a file 
+	//if filename matches
+		//if it is a file
 			//print the size in bytes
-		//else 
+		//else
 			//print " this isnt a file fool"
-	//file not found 
+	//file not found
 
 }
 
 
 void lsFunc(unsigned short cluster, char * dirname){
-	// int i, j, k;
-	// char dirname[12];
-	// DIR * cdir;	//current directory
+
+	int i, j, k;
+
+	//char dirname[12];
+	//current directory
+
 
 	// unsigned short Sector_offset = (cluster*4);
 	// unsigned short next_cluster;
@@ -174,13 +207,16 @@ void lsFunc(unsigned short cluster, char * dirname){
 	
 	// //unsigned short firstSector =
 
-	// //first we read the sector in each cluster
-	// for(i = 0; i < SectorPerCluster; i++){
+
+	//first we read the sector in each cluster
+
+	// for(i = 0; i < f32.BPB_SecPerClus; i++){
 	// 	//and then every dir name in each sector
-	// 	for(j = 0; j < BytesPerSector/32; j++){
+	// 	for(j = 0; j < f32.BPB_BytesPerSec/32; j++){
 
 	// 	}
-	//}
+	// }
+
 }
 
 tokenlist *new_tokenlist(void)
