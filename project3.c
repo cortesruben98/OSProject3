@@ -90,41 +90,37 @@ int main()
 	f32.fileID = open("fat32.img", O_RDWR); 
 	printf("file ID: %d\n", f32.fileID);
 	ssize_t i; 
-	char buffer[256];
-	
-	i = pread(f32.fileID, buffer, 2, 11); //i = number of bytes read 
-	printf("buffer: %s\n", buffer);
+	unsigned char buffer[32];
 
-	int buffernumber = atoi(buffer); //to int
-	__bswap_32 (buffernumber); //flip
-    f32.BPB_BytesPerSec = buffernumber;// saves 
+	i = pread(f32.fileID, buffer, 2, 11); //i = number of bytes read 
+	unsigned int temp = (unsigned int)buffer[1] << 8 | buffer[0];
+    f32.BPB_BytesPerSec = temp;// saves 
 
 	
 	i = pread(f32.fileID, buffer, 1, 13); //i = number of bytes read 
-	__bswap_32 (buffernumber);
-	buffernumber = atoi(buffer);
-	f32.BPB_SecPerClus = buffernumber;
+	temp = (unsigned int)buffer[0];
+	f32.BPB_SecPerClus = temp;
 
-        i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read
-	//flip it
+
     i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read 
-	__bswap_32 (buffernumber);
-	buffernumber = atoi(buffer);
-        f32.BPB_RsvdSecCnt = buffernumber;
+	temp = (unsigned int)buffer[1] << 8 | buffer[0];
+ 	f32.BPB_RsvdSecCnt = temp;
 
-        i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
-	//flip it
+	i = pread(f32.fileID, buffer, 1, 16);
+	temp = (unsigned int)buffer[0];
+	f32.BPB_NumFATs = temp;
+    
     i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
-	__bswap_32 (buffernumber);
-	buffernumber = atoi(buffer);
-        f32.BPB_TotSec32= buffernumber;
+	temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0];
+    f32.BPB_TotSec32= temp;
 
-        i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read
-	//flip it
+ 	i = pread(f32.fileID, buffer, 4, 36);
+	temp = (unsigned int)buffer[3] << 24 | (unsigned int)buffer[2] << 16 | (unsigned int)buffer[1] << 8 | (unsigned int)buffer[0];
+	f32.BPB_FATSz32 = temp;
+  
     i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read 
-	__bswap_32 (buffernumber);
-	buffernumber = atoi(buffer);
-        f32.BPB_RootClus = buffernumber;
+    temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0];
+    f32.BPB_RootClus = temp;
 
 
 	while (1) {
@@ -161,13 +157,12 @@ int main()
 }
 
 void info(){
-	printf("we are here");
 	printf("bytes per sector: %d\n", f32.BPB_BytesPerSec);
 	printf("sectors per cluster: %d\n", f32.BPB_SecPerClus);;
 	printf("reseverd sector count: %d\n", f32.BPB_RsvdSecCnt);
 	printf("number of FATs: %d\n", f32.BPB_NumFATs);
 	printf("total sectors: %d\n", f32.BPB_TotSec32);
-	printf("FATsize: %d\n", f32.BPB_FATSz32);
+	printf("FATsize: %u\n", f32.BPB_FATSz32);
 	printf("root cluster: %d\n", f32.BPB_RootClus );
 }
 
