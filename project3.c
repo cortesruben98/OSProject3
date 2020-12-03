@@ -31,7 +31,10 @@
 // 	}
 // }
 
-int CWDFAT_OFFSET;
+int CWD_CLUSTNUM;
+unsigned int clust_list[500];
+int clust_list_size= 0;
+int clust_list_max_size = 500;
 char * CWD_NAME[12];
 
 
@@ -77,12 +80,15 @@ void info();
 
 char *get_input(void);
 tokenlist *get_tokens(char *input);
-
-
+unsigned int FirstFATSector;
+unsigned int FirstDataSector;
 tokenlist *new_tokenlist(void);
 void add_token(tokenlist *tokens, char *item);
 void free_tokens(tokenlist *tokens);
 int flipit(int origional);
+void FileSize(char * filename);
+unsigned int GetFATOffset(int N);
+unsigned int GetDataOffset(int N);
 
 int main()
 {	
@@ -122,7 +128,10 @@ int main()
     i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read 
     temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0];
     f32.BPB_RootClus = temp;
+    CWD_CLUSTNUM = f32.BPB_RootClus;
 
+    FirstFATSector= f32.BPB_RsvdSecCnt;
+    FirstDataSector=f32.BPB_RsvdSecCnt+ (f32.BPB_NumFATs* f32.BPB_FATSz32);
 
 	while (1) {
 		printf("$ ");
@@ -145,6 +154,10 @@ int main()
 			else if(!strcmp(tokens->items[0], "info")){
 
 				info();
+			}
+			else if(!strcmp(tokens->items[0], "size"))
+			{
+				FileSize(tokens->items[1]);
 			}
 		}
 
@@ -170,12 +183,42 @@ void info(){
 int flipit(int origional); 
  
 void FileSize(char * filename){
+	unsigned char buffer[32];
 	//print error if filename not in cwd
 	if(filename == NULL)
 		printf("This isn't a file fool");
 // loop through CWD 32 bytes each directory content entry start at root dir
 	char name;
-	char file[strlen(filename)];
+	// char file[strlen(filename)];
+
+
+
+	// get cluster list for the entire CWD 
+	//calculate cluster offset for CWD first cluster 
+	//read the data there and loop until it ends. add all to the CWD list. 
+
+
+	unsigned int temp;
+	pread(f32.fileID, buffer, 4, GetFATOffset(CWD_CLUSTNUM)); // get the contents of the CWD fat cluster into buffer 
+	temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
+
+	int i =1;
+	clust_list[0]=CWD_CLUSTNUM; 
+	clust_list_size = 1;
+	while(temp <= 0x0FFFFFF8 && temp >= 0x0FFFFFFF && temp != 0xFFFFFFFF) //check temp is good 
+	{
+		clust_list[i]=temp; //save clust num
+		clust_list_size++;//update size 
+		pread(f32.fileID, buffer, 4, GetFATOffset(clust_list[i])); //get next one 
+		temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
+		i++; //incease 
+
+
+	}
+
+	//go to first data cluster of CWD
+
+
 
 	//if filename matches
 		//if it is a file
@@ -292,3 +335,12 @@ void free_tokens(tokenlist *tokens)
 /////////read function/////////
 //ssize_t read(int fildes, void *buf, size_t nbyte, off_t offset){
 
+unsigned int GetFATOffset(int N)
+{
+	return (FirstFATSector* f32.BPB_BytesPerSec+ N * 4);
+}
+
+unsigned int GetDataOffset(int N)
+{
+	return (FirstDataSector + (N -2) * f32.BPB_SecPerClus);
+}
