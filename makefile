@@ -6,5 +6,4 @@ project3.o: project3.c
 
 clean:
 	rm project3.o
-	rm a.out
 	rm project3

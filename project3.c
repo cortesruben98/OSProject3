@@ -42,13 +42,13 @@ typedef struct {
 } tokenlist;
 
 typedef struct {
-	int BPB_BytesPerSec;
-	int BPB_SecPerClus;
- 	int BPB_RsvdSecCnt;
-	int BPB_NumFATs;
-	int BPB_FATSz32;
-	int BPB_RootClus;
-	int BPB_TotSec32;
+	unsigned int BPB_BytesPerSec;
+	unsigned int BPB_SecPerClus;
+ 	unsigned int BPB_RsvdSecCnt;
+	unsigned int BPB_NumFATs;
+	unsigned int BPB_FATSz32;
+	unsigned int BPB_RootClus;
+	unsigned int BPB_TotSec32;
 	int fileID;
 
 } fileinfo;
@@ -86,41 +86,42 @@ int flipit(int origional);
 
 int main()
 {	
-	f32.fileID = open("fat32.img", O_RDWR ); 
+
+	f32.fileID = open("fat32.img", O_RDWR); 
+	printf("file ID: %d\n", f32.fileID);
 	ssize_t i; 
-	char buffer[32];
-	
+
+	unsigned char buffer[32];
+
 	i = pread(f32.fileID, buffer, 2, 11); //i = number of bytes read 
-	int buffernumber = atoi(buffer);
-	f32.BPB_BytesPerSec = buffernumber;
-	__bswap_32 (buffernumber);
-    f32.BPB_BytesPerSec = buffernumber;
+	unsigned int temp = (unsigned int)buffer[1] << 8 | buffer[0];
+    f32.BPB_BytesPerSec = temp;// saves 
+
 	
 	i = pread(f32.fileID, buffer, 1, 13); //i = number of bytes read 
-	__bswap_32 (buffernumber);
-	buffernumber = atoi(buffer);
-	f32.BPB_SecPerClus = buffernumber;
+	temp = (unsigned int)buffer[0];
+	f32.BPB_SecPerClus = temp;
 
-        i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read
-	//flip it
+
     i = pread(f32.fileID, buffer, 2, 14); //i = number of bytes read 
-	__bswap_32 (buffernumber);
-	buffernumber = atoi(buffer);
-        f32.BPB_RsvdSecCnt = buffernumber;
+	temp = (unsigned int)buffer[1] << 8 | buffer[0];
+ 	f32.BPB_RsvdSecCnt = temp;
 
-        i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
-	//flip it
+	i = pread(f32.fileID, buffer, 1, 16);
+	temp = (unsigned int)buffer[0];
+	f32.BPB_NumFATs = temp;
+    
     i = pread(f32.fileID, buffer, 4, 32); //i = number of bytes read 
-	__bswap_32 (buffernumber);
-	buffernumber = atoi(buffer);
-        f32.BPB_TotSec32= buffernumber;
+	temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0];
+    f32.BPB_TotSec32= temp;
 
-        i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read
-	//flip it
+ 	i = pread(f32.fileID, buffer, 4, 36);
+	temp = (unsigned int)buffer[3] << 24 | (unsigned int)buffer[2] << 16 | (unsigned int)buffer[1] << 8 | (unsigned int)buffer[0];
+	f32.BPB_FATSz32 = temp;
+  
     i = pread(f32.fileID, buffer, 4, 44); //i = number of bytes read 
-	__bswap_32 (buffernumber);
-	buffernumber = atoi(buffer);
-        f32.BPB_RootClus = buffernumber;
+    temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0];
+    f32.BPB_RootClus = temp;
 
 
 	while (1) {
@@ -136,10 +137,13 @@ int main()
 		tokenlist *tokens = get_tokens(input);
 		for (int i = 0; i < tokens->size; i++) {
 			printf("token %d: (%s)\n", i, tokens->items[i]);
+
 			if(!strcmp(tokens->items[0], "exit")){
+
 				break;
 			}
 			else if(!strcmp(tokens->items[0], "info")){
+
 				info();
 			}
 		}
@@ -149,18 +153,17 @@ int main()
 		free(input);
 		free_tokens(tokens);
 	}
-
+	close(f32.fileID);
 	return 0;
 }
 
 void info(){
-	printf("we are here");
 	printf("bytes per sector: %d\n", f32.BPB_BytesPerSec);
 	printf("sectors per cluster: %d\n", f32.BPB_SecPerClus);;
 	printf("reseverd sector count: %d\n", f32.BPB_RsvdSecCnt);
 	printf("number of FATs: %d\n", f32.BPB_NumFATs);
 	printf("total sectors: %d\n", f32.BPB_TotSec32);
-	printf("FATsize: %d\n", f32.BPB_FATSz32);
+	printf("FATsize: %u\n", f32.BPB_FATSz32);
 	printf("root cluster: %d\n", f32.BPB_RootClus );
 }
 
@@ -185,18 +188,21 @@ void FileSize(char * filename){
 
 
 void lsFunc(unsigned short cluster, char * dirname){
+
 	int i, j, k;
 
 	//char dirname[12];
 	//current directory
 
-	unsigned short Sector_offset = (cluster*4);
-	unsigned short next_cluster;
 
-	/*first sector we are working with would be where data sector starts + (cluster we are at - 2)
-	* multiplied by Sectors per Cluster
-	*/
-	//unsigned short firstSector =
+	// unsigned short Sector_offset = (cluster*4);
+	// unsigned short next_cluster;
+
+	// first sector we are working with would be where data sector starts + (cluster we are at - 2)
+	// * multiplied by Sectors per Cluster
+	
+	// //unsigned short firstSector =
+
 
 	//first we read the sector in each cluster
 
@@ -206,6 +212,7 @@ void lsFunc(unsigned short cluster, char * dirname){
 
 	// 	}
 	// }
+
 }
 
 tokenlist *new_tokenlist(void)
