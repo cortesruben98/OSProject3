@@ -89,9 +89,8 @@ int main()
 	f32.fileID = open("fat32.img", O_RDWR ); 
 	ssize_t i; 
 	char buffer[32];
-	unsigned char temp;
 	
-	i = pread(f32.fileID, temp, 1, 11); //i = number of bytes read 
+	i = pread(f32.fileID, buffer, 2, 11); //i = number of bytes read 
 	int buffernumber = atoi(buffer);
 	f32.BPB_BytesPerSec = buffernumber;
 	__bswap_32 (buffernumber);
@@ -173,7 +172,7 @@ void FileSize(char * filename){
 		printf("This isn't a file fool");
 // loop through CWD 32 bytes each directory content entry start at root dir
 	char name;
-	char file[sizeof(filename)];
+	char file[strlen(filename)];
 
 	//if filename matches
 		//if it is a file
