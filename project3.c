@@ -145,6 +145,18 @@ int main()
 
 				info();
 			}
+			else if(!strcmp(tokens->items[0], "size")){
+
+			}
+			else if(!strcmp(tokens->items[0], "ls")){
+
+			}
+			else if(!strcmp(tokens->items[0], "cd")){
+
+			}
+			else{
+				printf("not a valid command, please try again.")
+			}
 		}
 
 
@@ -197,9 +209,8 @@ void lsFunc(unsigned short cluster, char * dirname){
 	// unsigned short Sector_offset = (cluster*4);
 	// unsigned short next_cluster;
 
-	// first sector we are working with would be where data sector starts + (cluster we are at - 2)
-	// * multiplied by Sectors per Cluster
-	
+	// first sector is where data sector starts + (cluster we are at - 2) * multiplied by Sectors per Cluster
+
 	// //unsigned short firstSector =
 
 
@@ -212,6 +223,19 @@ void lsFunc(unsigned short cluster, char * dirname){
 	// 	}
 	// }
 
+}
+
+
+DIR_entry cd(char * dirname){
+	//return 0 if error otherwise change cwd
+	if (dirname == NULL){
+		printf("Error: no matching directory");
+	}
+
+	for(int i = 0; i<11;i++){
+		
+	}
+	
 }
 
 tokenlist *new_tokenlist(void)
