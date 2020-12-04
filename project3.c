@@ -353,24 +353,41 @@ void lsFunc(char * dirname){
 				continue;
 			if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
 				continue;
-			printf("%s\n", temp_DIR.DIR_Name);
+			if(!strncmp(temp_DIR.DIR_Name, dirname, strlen(dirname)))
+			{
+				printf("Error: There already exists a file named %s\n", dirname)
+				return;
+			}
 		}
 	}
 
 }
 
 
-// DIR_entry cd(char * dirname){
-// 	//return 0 if error otherwise change cwd
-// 	if (dirname == NULL){
-// 		printf("Error: no matching directory");
-// 	}
 
-// 	for(int i = 0; i<11;i++){
-		
-// 	}
-	
-// }
+void makingADir(char * dirname){
+	int j=0;
+	unsigned int offset_temp=GetDataOffset(clust_list[j]);
+	//need to add second larger loop for the other clusters in list 
+	while(offset_temp <  GetDataOffset(clust_list[0]+1) )
+	{
+		//compare to filename parm
+		pread(f32.fileID, &temp_DIR, 32, offset_temp);
+		offset_temp += 32;
+		j++;
+		if (temp_DIR.DIR_Name[0] == 0x00) //last entry
+		{
+			break;
+		}
+		if(temp_DIR.DIR_Name[0] == 0xE5) //empty
+			continue;
+		if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
+			continue;
+		if((temp.
+	}
+		return;
+
+}
 
 tokenlist *new_tokenlist(void)
 {
