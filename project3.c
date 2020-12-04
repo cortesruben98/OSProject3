@@ -36,8 +36,13 @@ unsigned int clust_list[500];
 int clust_list_size= 0;
 int clust_list_max_size = 500;
 char * CWD_NAME[12];
-
-
+#define ATTR_READ_ONLY 0x01 
+#define ATTR_HIDDEN 0x02
+#define ATTR_SYSTEM 0x04 
+#define ATTR_VOLUME_ID 0x08 
+#define ATTR_DIRECTORY 0x10
+#define ATTR_ARCHIVE 0x20
+#define ATTR_LONG_NAME (ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID) 
 
 typedef struct {
 	int size;
@@ -71,7 +76,6 @@ struct DIR_Entry {
 	unsigned int DIR_FileSize; //4 byte 
 
 }  __attribute__((packed));
-
 
 fileinfo f32;
 
@@ -184,28 +188,25 @@ int flipit(int origional);
  
 void FileSize(char * filename){
 	unsigned char buffer[32];
+	struct DIR_Entry temp_DIR;
 	//print error if filename not in cwd
 	if(filename == NULL)
-		printf("This isn't a file fool");
+	{
+		printf("Error no file given\n");
+		return;
+	}
+		
 // loop through CWD 32 bytes each directory content entry start at root dir
-	char name;
-	// char file[strlen(filename)];
-
-
-
-	// get cluster list for the entire CWD 
-	//calculate cluster offset for CWD first cluster 
-	//read the data there and loop until it ends. add all to the CWD list. 
 
 
 	unsigned int temp;
 	pread(f32.fileID, buffer, 4, GetFATOffset(CWD_CLUSTNUM)); // get the contents of the CWD fat cluster into buffer 
-	temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
+	temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // endianness  into temp; 
 
 	int i =1;
 	clust_list[0]=CWD_CLUSTNUM; 
 	clust_list_size = 1;
-	while(temp <= 0x0FFFFFF8 && temp >= 0x0FFFFFFF && temp != 0xFFFFFFFF) //check temp is good 
+	while((temp < 0x0FFFFFF8 || temp > 0x0FFFFFFF) && temp != 0xFFFFFFFF) //check temp is good 
 	{
 		clust_list[i]=temp; //save clust num
 		clust_list_size++;//update size 
@@ -217,15 +218,38 @@ void FileSize(char * filename){
 	}
 
 	//go to first data cluster of CWD
+	int j=0;
+	unsigned int offset_temp=GetDataOffset(clust_list[j]);
+	//need to add second larger loop for the other clusters in list 
+	while(offset_temp <  GetDataOffset(clust_list[0]+1) )
+	{
+		
+		//compare to filename parm 
+		pread(f32.fileID, &temp_DIR, 32, offset_temp);
+		offset_temp += 32;
+		j++;
+		if (temp_DIR.DIR_Name[0] == 0x00) //last entry 
+		{
+			break;
+
+		}
+		if(temp_DIR.DIR_Name[0] == 0xE5) //empty 
+			continue;
+		if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
+			continue;
+		
+		if(!strncmp(temp_DIR.DIR_Name, filename, strlen(filename)))
+		{
+			printf("Size of %s is: %u\n", filename, temp_DIR.DIR_FileSize);
+			return;
+		}
+	}
+	printf("Error: File not found.\n");
+	return;
+	//we didnt find it :/
+	//print error and return VOID 
 
 
-
-	//if filename matches
-		//if it is a file
-			//print the size in bytes
-		//else
-			//print " this isnt a file fool"
-	//file not found
 
 }
 
@@ -340,7 +364,7 @@ unsigned int GetFATOffset(int N)
 	return (FirstFATSector* f32.BPB_BytesPerSec+ N * 4);
 }
 
-unsigned int GetDataOffset(int N)
+unsigned int GetDataOffset(int N) //returns sector offset in bytes 
 {
-	return (FirstDataSector + (N -2) * f32.BPB_SecPerClus);
+	return (FirstDataSector + (N -2) * f32.BPB_SecPerClus)* f32.BPB_BytesPerSec;
 }
