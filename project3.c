@@ -101,7 +101,7 @@ int main()
 
 	f32.fileID = open("fat32.img", O_RDWR); 
 	printf("file ID: %d\n", f32.fileID);
-	ssize_t i; 
+	int i; 
 
 	unsigned char buffer[32];
 
@@ -138,6 +138,23 @@ int main()
 
     FirstFATSector= f32.BPB_RsvdSecCnt;
     FirstDataSector=f32.BPB_RsvdSecCnt+ (f32.BPB_NumFATs* f32.BPB_FATSz32);
+
+    //build CWD list 
+	pread(f32.fileID, buffer, 4, GetFATOffset(CWD_CLUSTNUM)); // get the contents of the CWD fat cluster into buffer 
+	temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // endianness  into temp; 
+
+	
+	i =1;
+	clust_list[0]=CWD_CLUSTNUM; 
+	clust_list_size = 1;
+	while((temp < 0x0FFFFFF8 || temp > 0x0FFFFFFF) && temp != 0xFFFFFFFF) //check temp is good 
+	{
+		clust_list[i]=temp; //save clust num
+		clust_list_size++;//update size 
+		pread(f32.fileID, buffer, 4, GetFATOffset(clust_list[i])); //get next one 
+		temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
+		i++; //incease 
+	} //end building of CWD list 
 
 	while (1) {
 		printf("$ ");
@@ -206,25 +223,6 @@ void FileSize(char * filename){
 	}
 
 // loop through CWD 32 bytes each directory content entry start at root dir
-
-
-	unsigned int temp;
-	pread(f32.fileID, buffer, 4, GetFATOffset(CWD_CLUSTNUM)); // get the contents of the CWD fat cluster into buffer 
-	temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // endianness  into temp; 
-
-	int i =1;
-	clust_list[0]=CWD_CLUSTNUM; 
-	clust_list_size = 1;
-	while((temp < 0x0FFFFFF8 || temp > 0x0FFFFFFF) && temp != 0xFFFFFFFF) //check temp is good 
-	{
-		clust_list[i]=temp; //save clust num
-		clust_list_size++;//update size 
-		pread(f32.fileID, buffer, 4, GetFATOffset(clust_list[i])); //get next one 
-		temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
-		i++; //incease 
-
-
-	}
 
 	//go to first data cluster of CWD
 	int j=0;
