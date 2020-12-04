@@ -96,6 +96,7 @@ void FileSize(char * filename);
 unsigned int GetFATOffset(int N);
 unsigned int GetDataOffset(int N);
 void CD(char * directory);
+void MV(char * from, char * to);
 int main()
 {	
 
@@ -187,6 +188,9 @@ int main()
 		}
 		else if(!strcmp(tokens->items[0], "cd")){
 			CD(tokens->items[1]);
+		}
+		else if(!strcmp(tokens-items[0], "mv")){
+			MV(tokens->items[1], tokens->items[2]);
 		}
 		else{
 			printf("not a valid command, please try again.");}
@@ -332,7 +336,7 @@ void lsFunc(char * dirname){
 			lsclust_list[i]=tempvar; //save clust num
 			lsclust_list_size++;//update size 
 			pread(f32.fileID, buffer, 4, GetFATOffset(lsclust_list[i])); //get next one 
-			tempvar = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
+			tempvar = (unsigned int)/buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
 			i++; //increase
 		} //end building of CWD list
 		int x = 0;
@@ -383,7 +387,7 @@ void makingADir(char * dirname){
 			continue;
 		if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
 			continue;
-		if((temp.
+		if((temp.))
 	}
 		return;
 
@@ -539,4 +543,29 @@ void CD(char * directory)
 	} //end building of CWD list 
 
 	strcpy(CWD_NAME, temp_DIR.DIR_Name);
+}
+void MV(char * from, char * to)
+{
+	if(from == NULL)
+	{
+		printf("No file given");
+	}
+	else if(to == NULL)
+	{
+		//rename from to name specified by to
+	}
+	else
+	{
+		//if to is file and from is file print ""The name is already being used by another file"
+		//if to is file and from is directory, print "Cannot move directory: invalid destination argument"
+	}
+
+
+
+
+
+
+
+
+
 }
