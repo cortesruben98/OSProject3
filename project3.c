@@ -36,7 +36,7 @@ int CWD_CLUSTNUM;
 unsigned int clust_list[500];
 int clust_list_size= 0;
 int clust_list_max_size = 500;
-char * CWD_NAME[12];
+char CWD_NAME[11];
 #define ATTR_READ_ONLY 0x01 
 #define ATTR_HIDDEN 0x02
 #define ATTR_SYSTEM 0x04 
@@ -95,7 +95,7 @@ int flipit(int origional);
 void FileSize(char * filename);
 unsigned int GetFATOffset(int N);
 unsigned int GetDataOffset(int N);
-
+void CD(char * directory);
 int main()
 {	
 
@@ -186,7 +186,7 @@ int main()
 			lsFunc(tokens->items[1]);
 		}
 		else if(!strcmp(tokens->items[0], "cd")){
-
+			CD(tokens->items[1]);
 		}
 		else{
 			printf("not a valid command, please try again.");}
@@ -477,3 +477,66 @@ unsigned int GetDataOffset(int N) //returns sector offset in bytes
 	return (FirstDataSector + (N -2) * f32.BPB_SecPerClus)* f32.BPB_BytesPerSec;
 }
 
+void CD(char * directory)
+{
+	if(directory == NULL)
+	{
+		printf("Error: empty directory parameter\n");
+		return;
+	}
+
+	unsigned char buffer[32];
+	struct DIR_Entry temp_DIR;
+	int j=0;
+	unsigned int offset_temp=GetDataOffset(clust_list[j]);
+	//need to add second larger loop for the other clusters in list 
+	while(offset_temp <  GetDataOffset(clust_list[0]+1) )
+	{
+		//compare to filename parm
+		pread(f32.fileID, &temp_DIR, 32, offset_temp);
+		offset_temp += 32;
+		j++;
+		if (temp_DIR.DIR_Name[0] == 0x00) //last entry
+		{
+			printf("Error: invalid directory name\n");
+			return;
+		}
+		if(temp_DIR.DIR_Name[0] == 0xE5) //empty
+			continue;
+		if((temp_DIR.DIR_Attr & ATTR_DIRECTORY) != ATTR_DIRECTORY){
+			continue;
+		}
+		if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
+			continue;
+		if(!strncmp(temp_DIR.DIR_Name, directory, strlen(directory)))
+		{
+
+			CWD_CLUSTNUM = temp_DIR.DIR_FstClusHI << 8 | temp_DIR.DIR_FstClusLO;
+			if(!strcmp(directory, "..") && CWD_CLUSTNUM == 0x00)
+			{
+				CWD_CLUSTNUM = f32.BPB_RootClus;
+			}
+			clust_list[0] = CWD_CLUSTNUM;
+			clust_list_size = 1;
+			break;
+		}
+	}
+
+	pread(f32.fileID, buffer, 4, GetFATOffset(CWD_CLUSTNUM)); // get the contents of the CWD fat cluster into buffer 
+	unsigned int temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // endianness  into temp; 
+
+	
+	int i =1;
+	clust_list[0]=CWD_CLUSTNUM; 
+	clust_list_size = 1;
+	while((temp < 0x0FFFFFF8 || temp > 0x0FFFFFFF) && temp != 0xFFFFFFFF) //check temp is good 
+	{
+		clust_list[i]=temp; //save clust num
+		clust_list_size++;//update size 
+		pread(f32.fileID, buffer, 4, GetFATOffset(clust_list[i])); //get next one 
+		temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
+		i++; //incease 
+	} //end building of CWD list 
+
+	strcpy(CWD_NAME, temp_DIR.DIR_Name);
+}
