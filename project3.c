@@ -150,21 +150,28 @@ int main()
 		tokenlist *tokens = get_tokens(input);
 		for (int i = 0; i < tokens->size; i++) {
 			printf("token %d: (%s)\n", i, tokens->items[i]);
-
-			if(!strcmp(tokens->items[0], "exit")){
-
-				break;
-			}
-			else if(!strcmp(tokens->items[0], "info")){
-
-				info();
-			}
-			else if(!strcmp(tokens->items[0], "size"))
-			{
-				FileSize(tokens->items[1]);
-			}
 		}
 
+		if(!strcmp(tokens->items[0], "exit")){
+
+			break;
+		}
+		else if(!strcmp(tokens->items[0], "info")){
+
+			info();
+		}
+		else if(!strcmp(tokens->items[0], "size")){
+			FileSize(tokens->items[1]);
+		}
+		else if(!strcmp(tokens->items[0], "ls")){
+
+		}
+		else if(!strcmp(tokens->items[0], "cd")){
+
+		}
+		else{
+			printf("not a valid command, please try again.");}
+	
 
 
 		free(input);
@@ -265,9 +272,8 @@ void lsFunc(unsigned short cluster, char * dirname){
 	// unsigned short Sector_offset = (cluster*4);
 	// unsigned short next_cluster;
 
-	// first sector we are working with would be where data sector starts + (cluster we are at - 2)
-	// * multiplied by Sectors per Cluster
-	
+	// first sector is where data sector starts + (cluster we are at - 2) * multiplied by Sectors per Cluster
+
 	// //unsigned short firstSector =
 
 
@@ -281,6 +287,19 @@ void lsFunc(unsigned short cluster, char * dirname){
 	// }
 
 }
+
+
+// DIR_entry cd(char * dirname){
+// 	//return 0 if error otherwise change cwd
+// 	if (dirname == NULL){
+// 		printf("Error: no matching directory");
+// 	}
+
+// 	for(int i = 0; i<11;i++){
+		
+// 	}
+	
+// }
 
 tokenlist *new_tokenlist(void)
 {
@@ -366,5 +385,7 @@ unsigned int GetFATOffset(int N)
 
 unsigned int GetDataOffset(int N) //returns sector offset in bytes 
 {
+
 	return (FirstDataSector + (N -2) * f32.BPB_SecPerClus)* f32.BPB_BytesPerSec;
 }
+
