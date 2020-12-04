@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <byteswap.h>
+#include <time.h>
 //using namespace std;
 
 /*void exit(){
@@ -96,6 +97,7 @@ void FileSize(char * filename);
 unsigned int GetFATOffset(int N);
 unsigned int GetDataOffset(int N);
 void CD(char * directory);
+void createfile(char * filename);
 int main()
 {	
 
@@ -187,6 +189,10 @@ int main()
 		}
 		else if(!strcmp(tokens->items[0], "cd")){
 			CD(tokens->items[1]);
+		}
+		else if(!strcmp(tokens->items[0], "creat"))
+		{
+			createfile(tokens->items[1]);
 		}
 		else{
 			printf("not a valid command, please try again.");}
@@ -512,3 +518,84 @@ void CD(char * directory)
 
 	strcpy(CWD_NAME, temp_DIR.DIR_Name);
 }
+
+void createfile(char * filename)
+{
+	//loop through fat and find a spot with 0x00 in it
+	unsigned char buffer[32];
+	struct DIR_Entry temp_DIR ;
+	struct DIR_Entry new_DIR ;
+	unsigned int temp;
+	unsigned int tempoffset = 2;
+	while(tempoffset < FirstDataSector) 
+	{
+		pread(f32.fileID, buffer, 4, GetFATOffset(++tempoffset));
+		temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0];
+		if( temp == 0x00)
+		{
+			//its empty lets claim it 
+			unsigned int EOC = 0x0FFFFFF8;
+			pwrite(f32.fileID, &EOC, 4, GetFATOffset(tempoffset));
+			break;
+		}
+	}
+
+	//go to data cluster and WIPE IT CLEAN 
+	unsigned int dataoffset= GetDataOffset(tempoffset);
+	pwrite(f32.fileID, 0x00, 512, dataoffset); // set it all to 0;
+	unsigned short clustnum =GetFATOffset(tempoffset);
+
+	strcpy(new_DIR.DIR_Name, filename); //name
+	new_DIR.DIR_Attr = 0x02;
+	new_DIR.DIR_NTRes = 0x00;
+	new_DIR.DIR_CrtTimeTenth = 0x00;
+	new_DIR.DIR_CrtTime = 0x00;
+	new_DIR.DIR_CrtDate =0x00;
+	new_DIR.DIR_LstAccDate =0x00;
+	new_DIR.DIR_FstClusHI = clustnum >>8;
+	new_DIR.DIR_WrtTime =0x00;
+	new_DIR.DIR_WrtDate =0x00;
+	new_DIR.DIR_FstClusLO = clustnum & 0x00FF;
+	new_DIR.DIR_FileSize =0x00;
+
+	//add to CWD 
+	int j=0;
+	unsigned int offset_temp=GetDataOffset(clust_list[j]);
+	unsigned char zeros[32] = {0};
+	int count =0;
+	// unsigned char test[4] = {0xFF};
+	while(offset_temp <  GetDataOffset(clust_list[0]+1) )
+	{
+		
+		//compare to filename parm
+		pread(f32.fileID, &temp_DIR, 32, offset_temp);
+		offset_temp += 32;
+		j++;
+		if (temp_DIR.DIR_Name[0] == 0x00) //last entry
+		{
+			// printf("here!\n");
+			printf("%X\n",offset_temp );
+			count = pwrite(f32.fileID, &new_DIR, 32, offset_temp-32);
+			// printf("%s\n",temp_DIR.DIR_Name );
+			pwrite(f32.fileID, zeros, 32, offset_temp);
+			return;
+		}
+		if(temp_DIR.DIR_Name[0] == 0xE5) //empty
+		{
+			printf("%X\n",offset_temp );
+			count = pwrite(f32.fileID, &new_DIR, 32, offset_temp-32);
+			return;
+		}
+
+		
+		if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
+		{
+			printf("%X\n",offset_temp );
+			count = pwrite(f32.fileID, &new_DIR, 32, offset_temp-32);
+			return;
+		}
+
+	}
+	printf("Error: Out of space\n");
+}
+
