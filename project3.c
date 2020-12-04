@@ -146,28 +146,28 @@ int main()
 		tokenlist *tokens = get_tokens(input);
 		for (int i = 0; i < tokens->size; i++) {
 			printf("token %d: (%s)\n", i, tokens->items[i]);
-
-			if(!strcmp(tokens->items[0], "exit")){
-
-				break;
-			}
-			else if(!strcmp(tokens->items[0], "info")){
-
-				info();
-			}
-			else if(!strcmp(tokens->items[0], "size")){
-				FileSize(tokens->items[1]);
-			}
-			else if(!strcmp(tokens->items[0], "ls")){
-
-			}
-			else if(!strcmp(tokens->items[0], "cd")){
-
-			}
-			else{
-				printf("not a valid command, please try again.")
 		}
 
+		if(!strcmp(tokens->items[0], "exit")){
+
+			break;
+		}
+		else if(!strcmp(tokens->items[0], "info")){
+
+			info();
+		}
+		else if(!strcmp(tokens->items[0], "size")){
+			FileSize(tokens->items[1]);
+		}
+		else if(!strcmp(tokens->items[0], "ls")){
+
+		}
+		else if(!strcmp(tokens->items[0], "cd")){
+
+		}
+		else{
+			printf("not a valid command, please try again.");}
+	
 
 
 		free(input);
@@ -265,17 +265,17 @@ void lsFunc(unsigned short cluster, char * dirname){
 }
 
 
-DIR_entry cd(char * dirname){
-	//return 0 if error otherwise change cwd
-	if (dirname == NULL){
-		printf("Error: no matching directory");
-	}
+// DIR_entry cd(char * dirname){
+// 	//return 0 if error otherwise change cwd
+// 	if (dirname == NULL){
+// 		printf("Error: no matching directory");
+// 	}
 
-	for(int i = 0; i<11;i++){
+// 	for(int i = 0; i<11;i++){
 		
-	}
+// 	}
 	
-}
+// }
 
 tokenlist *new_tokenlist(void)
 {
