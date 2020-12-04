@@ -11,26 +11,6 @@
 #include <byteswap.h>
 //using namespace std;
 
-/*void exit(){
-	//safely exit program
-	//free up resources
-}*/
-
-// main code for this project
-
-// while(command != "exit"){
-// 	print("$ ");
-// 	read_from_stdin(command);
-// 	if(command == "info"){
-// 		//do stuff
-// 	}
-// 	else if(command == "ls"){
-// 		//do stuff
-// 	}
-// 	else if(){
-
-// 	}
-// }
 
 int CWD_CLUSTNUM;
 unsigned int clust_list[500];
@@ -44,6 +24,9 @@ char CWD_NAME[11];
 #define ATTR_DIRECTORY 0x10
 #define ATTR_ARCHIVE 0x20
 #define ATTR_LONG_NAME (ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID) 
+
+unsigned int rootcluster[500];
+
 
 typedef struct {
 	int size;
@@ -83,6 +66,8 @@ fileinfo f32;
 //test
 void info();
 void lsFunc(char * dirname);
+void makingADir(char * dirname);
+unsigned int * clusterlist(unsigned int clustnum);
 
 char *get_input(void);
 tokenlist *get_tokens(char *input);
@@ -97,12 +82,17 @@ unsigned int GetFATOffset(int N);
 unsigned int GetDataOffset(int N);
 void CD(char * directory);
 int main()
-{	
+{
+	for(int i = 0; i < 500; i++){
+		rootcluster[i] = 0;
+	}
+	rootcluster[0] = f32.BPB_RootClus;
 
-	f32.fileID = open("fat32.img", O_RDWR); 
+	f32.fileID = open("fat32.img", O_RDWR);
 	printf("file ID: %d\n", f32.fileID);
-	int i; 
-
+	int i;
+	struct DIR_Entry aDir;
+	aDir.DIR_Attr = 0x10;
 	unsigned char buffer[32];
 
 	i = pread(f32.fileID, buffer, 2, 11); //i = number of bytes read 
@@ -143,7 +133,7 @@ int main()
 	pread(f32.fileID, buffer, 4, GetFATOffset(CWD_CLUSTNUM)); // get the contents of the CWD fat cluster into buffer 
 	temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // endianness  into temp; 
 
-	
+
 	i =1;
 	clust_list[0]=CWD_CLUSTNUM; 
 	clust_list_size = 1;
@@ -188,9 +178,12 @@ int main()
 		else if(!strcmp(tokens->items[0], "cd")){
 			CD(tokens->items[1]);
 		}
+		else if(!strcmp(tokens->items[0], "mkdir")){
+			makingADir(tokens->items[1]);
+		}
 		else{
 			printf("not a valid command, please try again.");}
-	
+
 
 
 		free(input);
@@ -353,11 +346,8 @@ void lsFunc(char * dirname){
 				continue;
 			if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
 				continue;
-			if(!strncmp(temp_DIR.DIR_Name, dirname, strlen(dirname)))
-			{
-				printf("Error: There already exists a file named %s\n", dirname)
-				return;
-			}
+
+			printf("%s\n", temp_DIR.DIR_Name);
 		}
 	}
 
@@ -366,26 +356,98 @@ void lsFunc(char * dirname){
 
 
 void makingADir(char * dirname){
-	int j=0;
-	unsigned int offset_temp=GetDataOffset(clust_list[j]);
-	//need to add second larger loop for the other clusters in list 
-	while(offset_temp <  GetDataOffset(clust_list[0]+1) )
-	{
-		//compare to filename parm
-		pread(f32.fileID, &temp_DIR, 32, offset_temp);
-		offset_temp += 32;
-		j++;
-		if (temp_DIR.DIR_Name[0] == 0x00) //last entry
-		{
+	unsigned char dotbuf[512] = {	 0x2E, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+                                 0x20, 0x10, 0x00, 0x64, 0x04, 0x8E, 0x78, 0x4E, 0x78, 0x4E,
+                                 0x00, 0x00, 0x04, 0x8E, 0x78, 0x4E, 0xB3, 0x01, 0x00, 0x00,
+                                 0x00, 0x00, 0x2E, 0x2E, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+                                 0x20, 0x20, 0x20, 0x10, 0x00, 0x64, 0x04, 0x8E, 0x78, 0x4E,
+                                 0x78, 0x4E, 0x00, 0x00, 0x04, 0x8E, 0x78, 0x4E, 0x00, 0x00,
+                                 0x00, 0x00, 0x00, 0x00};
+	char buff[4];
+	unsigned int currentdir;
+	unsigned int count = 0;
+	char buffer[32];
+	for(int i = 0; i < 32; i++){
+		buffer[i] = 0xFF;
+	}
+	lseek(f32.fileID, 0x4004, SEEK_SET);
+	while(1){
+		read(f32.fileID, buff, 4);
+		unsigned int temp = (unsigned int)buff[3] << 24 | buff[2] << 16 | buff[1] << 8 | buff[0];
+		count += 1;
+		if(temp == 0x0000){
 			break;
 		}
-		if(temp_DIR.DIR_Name[0] == 0xE5) //empty
-			continue;
-		if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
-			continue;
-		if((temp.
 	}
-		return;
+	lseek(f32.fileID, -4, SEEK_CUR);
+	buff[0] = 0xF8;
+	buff[1] = 0xFF;
+	buff[2] = 0xFF;
+	buff[3] = 0x0F;
+	write(f32.fileID, buff, 4);
+	int j=0;
+	unsigned int offset_temp=GetDataOffset(clust_list[j]);
+	struct DIR_Entry ourDIR;
+	struct DIR_Entry newDir;
+
+	for(int i = 0; i < 11; i++){
+		newDir.DIR_Name[i] = dirname[i];
+	}
+	newDir.DIR_Attr = 0x10;
+	newDir.DIR_FstClusHI = (count >> 16);
+	newDir.DIR_FstClusLO = (count & 0xFFFF);
+	//need to add second larger loop for the other clusters in list
+	printf("NewDirHigh: %x\n", newDir.DIR_FstClusHI);
+	printf("NewDirLo: %x\n", newDir.DIR_FstClusLO);
+	while(offset_temp <  GetDataOffset(clust_list[0]+1) )
+	{
+		if(offset_temp == GetDataOffset(f32.BPB_RootClus)){
+			dotbuf[20] = (count >> 16) & 0xFF;
+			dotbuf[21] = (count >> 16) >> 8;
+			dotbuf[26] = (count & 0xFFFF) & 0xFF;
+			dotbuf[27] = (count & 0xFFFF) >> 8;
+		}
+		printf("Offset: %x\n", offset_temp);
+		//compare to filename parm
+		pread(f32.fileID, &ourDIR, 32, offset_temp);
+		printf("Name: %s\n", ourDIR.DIR_Name);
+		j++;
+		if(ourDIR.DIR_Name[0] == '.' && ourDIR.DIR_Name[1] != '.'){
+			currentdir = ((ourDIR.DIR_FstClusHI << 16) + ourDIR.DIR_FstClusLO);
+			dotbuf[20] = (count >> 16) & 0xFF;
+			dotbuf[21] = (count >> 16) >> 8;
+			dotbuf[26] = (count & 0xFFFF) & 0xFF;
+			dotbuf[27] = (count & 0xFFFF) >> 8;
+
+			dotbuf[20+32] = (currentdir >> 16) & 0xFF;
+			dotbuf[21+32] = (currentdir >> 16) >> 8;
+			dotbuf[26+32] = (currentdir & 0xFFFF) & 0xFF;
+			dotbuf[27+32] = (currentdir & 0xFFFF) >> 8;
+		}
+		if (ourDIR.DIR_Name[0] == 0x00) //last entry
+		{
+			pwrite(f32.fileID, buffer, 32, offset_temp);
+			pwrite(f32.fileID, &newDir, 32, offset_temp+32);
+			pwrite(f32.fileID, dotbuf, 64, GetDataOffset(count));
+			for(int i = 0; i < 512; i++)
+				dotbuf[i] = 0;
+			pwrite(f32.fileID, dotbuf, 512-64, GetDataOffset(count+64));
+			return;
+		}
+		if(ourDIR.DIR_Name[0] == 0xE5){ //empty
+			//here too
+			pwrite(f32.fileID, buffer, 32, offset_temp);
+			pwrite(f32.fileID, &newDir, 32, offset_temp+32);
+			pwrite(f32.fileID, dotbuf, 64, GetDataOffset(count));
+			for(int i = 0; i < 512; i++)
+				dotbuf[i] = 0;
+			pwrite(f32.fileID, dotbuf, 512-64, GetDataOffset(count+64));
+			return;
+		}
+		offset_temp += 32;
+
+	}
+	return;
 
 }
 
@@ -539,4 +601,26 @@ void CD(char * directory)
 	} //end building of CWD list 
 
 	strcpy(CWD_NAME, temp_DIR.DIR_Name);
+}
+
+
+unsigned int * clusterlist(unsigned int clustnum){
+	static unsigned int cluster_list[500];
+	char buffer[32];
+	pread(f32.fileID, buffer, 4, GetFATOffset(CWD_CLUSTNUM)); // get the contents of the CWD fat cluster into buffer 
+	unsigned int tempnum = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // endianness  into temp; 
+
+
+	int i =1;
+	cluster_list[0]=CWD_CLUSTNUM; 
+	int cluster_list_size = 1;
+	while((tempnum < 0x0FFFFFF8 || tempnum > 0x0FFFFFFF) && tempnum != 0xFFFFFFFF) //check temp is good 
+	{
+		cluster_list[i]=tempnum; //save clust num
+		cluster_list_size++;//update size 
+		pread(f32.fileID, buffer, 4, GetFATOffset(cluster_list[i])); //get next one 
+		tempnum = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
+		i++; //incease 
+	} //end building of CWD list 
+	return cluster_list;
 }
