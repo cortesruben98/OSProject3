@@ -1,3 +1,4 @@
+
 // this is our proj3 file
 //#include <iostream>
 #define _XOPEN_SOURCE 500
@@ -81,6 +82,7 @@ fileinfo f32;
 
 //test
 void info();
+void lsFunc(char * dirname);
 
 char *get_input(void);
 tokenlist *get_tokens(char *input);
@@ -164,7 +166,7 @@ int main()
 			FileSize(tokens->items[1]);
 		}
 		else if(!strcmp(tokens->items[0], "ls")){
-
+			lsFunc(tokens->items[1]);
 		}
 		else if(!strcmp(tokens->items[0], "cd")){
 
@@ -202,7 +204,7 @@ void FileSize(char * filename){
 		printf("Error no file given\n");
 		return;
 	}
-		
+
 // loop through CWD 32 bytes each directory content entry start at root dir
 
 
@@ -261,30 +263,48 @@ void FileSize(char * filename){
 }
 
 
-void lsFunc(unsigned short cluster, char * dirname){
+void lsFunc(char * dirname){
 
-	int i, j, k;
+	unsigned int temp;
+	unsigned char buffer[32];
+	struct DIR_Entry temp_DIR;
 
-	//char dirname[12];
 	//current directory
+	if(dirname == NULL){
+		//working with cwd
+		//pread(f32.fileID, buffer, 4, GetFATOffset(CWD_CLUSTNUM)); // get the contents of the CWD fat cluster into buffer 
+		//temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // endianness  into temp; 
+		int j=0;
+		unsigned int offset_temp=GetDataOffset(clust_list[j]);
+		//need to add second larger loop for the other clusters in list 
+		while(offset_temp <  GetDataOffset(clust_list[0]+1) )
+		{
+			//compare to filename parm
+			pread(f32.fileID, &temp_DIR, 32, offset_temp);
+			offset_temp += 32;
+			j++;
+			if (temp_DIR.DIR_Name[0] == 0x00) //last entry
+			{
+				break;
 
+			}
+			if(temp_DIR.DIR_Name[0] == 0xE5) //empty
+				continue;
+			if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
+				continue;
+			if(!strncmp(temp_DIR.DIR_Name, temp_DIR.DIR_Name, strlen(temp_DIR.DIR_Name)))
+			{
+				printf("%s\n", temp_DIR.DIR_Name);
+				return;
+			}
+		}
+		printf("Error\n");
+		return;
 
-	// unsigned short Sector_offset = (cluster*4);
-	// unsigned short next_cluster;
+	}
 
-	// first sector is where data sector starts + (cluster we are at - 2) * multiplied by Sectors per Cluster
+	printf("Dirname not equal to null\n");
 
-	// //unsigned short firstSector =
-
-
-	//first we read the sector in each cluster
-
-	// for(i = 0; i < f32.BPB_SecPerClus; i++){
-	// 	//and then every dir name in each sector
-	// 	for(j = 0; j < f32.BPB_BytesPerSec/32; j++){
-
-	// 	}
-	// }
 
 }
 
