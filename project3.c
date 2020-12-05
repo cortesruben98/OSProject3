@@ -213,6 +213,30 @@ int main()
 		{
 			closefile(tokens->items[1]);
 		}
+		else if(!strcmp(toekns->items[0],"lseek"))
+		{
+			printf("Not implemented");
+		}
+		else if(!strcmp(toekns->items[0],"read"))
+		{
+			printf("Not implemented");
+		}
+		else if(!strcmp(toekns->items[0],"write"))
+		{
+			printf("Not implemented");
+		}
+		else if(!strcmp(toekns->items[0],"rm"))
+		{
+			printf("Not implemented");
+		}
+		else if(!strcmp(toekns->items[0],"cp"))
+		{
+			printf("Not implemented");
+		}
+		else if(!strcmp(toekns->items[0],"rmdir"))
+		{
+			printf("Not implemented");
+		}
 		else
 		{
 			printf("not a valid command, please try again.");
