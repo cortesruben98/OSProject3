@@ -53,6 +53,8 @@ unimplemented sections listed above in division of labor
 creat: unable to create a new cluster if the current one is full. In this case a directory will not be made. 
 size: wont look past the first cluster of the directory.
 cd: wont look past the first cluster of the directory to find what its looking for.
+mv: fails to actually move the files
+open: doesnt rewrite the attribute in the directory
 
 
 
