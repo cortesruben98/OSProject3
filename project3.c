@@ -786,7 +786,7 @@ void closefile(char * filename)
 {
 
 	int i;
-	for(i = 0; i < openfilecount; i++)
+	for(i = 0; i <= openfilecount; i++)
 	{
 		if(openlist[i].file_name == filename)
 		{
