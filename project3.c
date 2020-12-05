@@ -62,8 +62,16 @@ struct DIR_Entry {
 
 }  __attribute__((packed));
 
-fileinfo f32;
+typedef struct {
+	char file_name[11];
+	char mode_spec;
+	unsigned int clusternum;
 
+} openfiledata;
+
+fileinfo f32;
+openfiledata[40];
+openfilecount = 0; 
 //test
 void info();
 void lsFunc(char * dirname);
@@ -84,6 +92,7 @@ unsigned int GetDataOffset(int N);
 void CD(char * directory);
 void MV(char * from, char * to);
 void createfile(char * filename);
+void openfile(char * filename);
 int main()
 {
 	for(int i = 0; i < 500; i++){
@@ -184,7 +193,7 @@ int main()
 		{
 			CD(tokens->items[1]);
 		}
-		else if(!strcmp(tokens-items[0], "mv"))
+		else if(!strcmp(tokens->items[0], "mv"))
 		{
 			MV(tokens->items[1], tokens->items[2]);
 		}
@@ -195,6 +204,14 @@ int main()
 		else if(!strcmp(tokens->items[0], "mkdir"))
 		{
 			makingADir(tokens->items[1]);
+		}
+		else if(!strcmp(tokens->items[0],"open"))
+		{
+			openfile(tokens->items[1]);
+		}
+		else if(!strcmp(toekns->items[0],"close"))
+		{
+			closefile(tokens->items[1]);
 		}
 		else
 		{
@@ -342,7 +359,7 @@ void lsFunc(char * dirname){
 			lsclust_list[i]=tempvar; //save clust num
 			lsclust_list_size++;//update size 
 			pread(f32.fileID, buffer, 4, GetFATOffset(lsclust_list[i])); //get next one 
-			tempvar = (unsigned int)/buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
+			tempvar = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // transform into temp; 
 			i++; //increase
 		} //end building of CWD list
 		int x = 0;
@@ -406,7 +423,7 @@ void makingADir(char * dirname){
 	unsigned int offset_temp=GetDataOffset(clust_list[j]);
 	struct DIR_Entry ourDIR;
 	struct DIR_Entry newDir;
-
+ 
 	for(int i = 0; i < 11; i++){
 		newDir.DIR_Name[i] = dirname[i];
 	}
@@ -624,22 +641,138 @@ void CD(char * directory)
 
 void MV(char * from, char * to)
 {
+	unsigned int lsclust_list[500];
+	unsigned int lsclust_list_size = 0;
+	unsigned int temp;
+	unsigned char buffer[32];
+	struct DIR_Entry temp_DIR;
+
 	if(from == NULL)
 	{
-		printf("No file given");
-	}
-	else if(to == NULL)
-	{
-		//rename from to name specified by to
+		printf("No file given\n");
 	}
 	else
 	{
 		//if to is file and from is file print ""The name is already being used by another file"
 		//if to is file and from is directory, print "Cannot move directory: invalid destination argument"
+		int j=0;
+		unsigned int offset_temp=GetDataOffset(clust_list[j]);
+		//need to add second larger loop for the other clusters in list 
+		while(offset_temp <  GetDataOffset(clust_list[0]+1) )
+		{
+			//compare to filename parm
+			pread(f32.fileID, &temp_DIR, 32, offset_temp);
+			offset_temp += 32;
+			j++;
+			if (temp_DIR.DIR_Name[0] == 0x00) //last entry
+			{
+				printf("File not found\n");
+				break;
+			}
+			if(temp_DIR.DIR_Name[0] == 0xE5) //empty
+				continue;
+			if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
+				continue;
+
+			//printf("%s\n", temp_DIR.DIR_Name);
+			if(!strcmp(temp_DIR.DIR_Name, from))
+			{
+				printf("File found!\n");
+
+
+				if(to == NULL)
+				{
+					//wite to file to change name 
+
+				}
+				else
+				{
+				}
+			}
+
+		}
+		
+		
+		
 	}
 
 }
+void openfile(char * filename, char * mode)
+{
+	unsigned int lsclust_list[500];
+	unsigned int lsclust_list_size = 0;
+	unsigned int temp;
+	unsigned char buffer[32];
+	struct DIR_Entry temp_DIR;
 
+	//working with cwd
+	int j=0;
+	unsigned int offset_temp=GetDataOffset(clust_list[j]);
+	//need to add second larger loop for the other clusters in list 
+	if(mode != 'r' && mode != 'w' && mode != "rw" && mode != "wr")
+	{
+		printf("Invalid mode\n");
+		return;
+	}
+	while(offset_temp <  GetDataOffset(clust_list[0]+1) )
+	{
+		//compare to filename parm
+		pread(f32.fileID, &temp_DIR, 32, offset_temp);
+		offset_temp += 32;
+		j++;
+		if (temp_DIR.DIR_Name[0] == 0x00) //last entry
+		{
+			printf("File not found");
+			break;
+		}
+		if(temp_DIR.DIR_Name[0] == 0xE5) //empty
+			continue;
+		if((temp_DIR.DIR_Attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) //long file, ignore 
+			continue;
+
+		//printf("%s\n", temp_DIR.DIR_Name);
+		if(!strncmp(temp_DIR.DIR_Name, filename, strlen(filename)))
+		{
+			//printf("found\n");
+			if(temp_DIR.DIR_Attr == 0x10)
+			{
+				printf("That is a Directory\n");
+				return;
+			}
+			int i;
+			for(i = 0; i < openfilecount; i++)
+			{
+				if(openfiledata[i].file_name == filename)
+				{
+					printf("File Already Open\n");
+					return;
+				}
+			}
+			openfiledata[openfilecount].file_name = filename;
+			openfiledata[openfilecount].mode_spec = mode;
+			openfiledata[openfilecount].clusternum = temp_DIR.DIR_FstClusHI << 8 | temp_DIR.DIR_FstClusLO;
+			//need to write to file still *********************
+
+			return;
+		}
+	}
+
+
+}
+void closefile(char * filename)
+{
+
+	int i;
+	for(i = 0; i < openfilecount; i++)
+	{
+		if(openfiledata[i].file_name == filename)
+		{
+			openfilecount--;
+			return;
+		}
+	}
+	printf("File is not open\n");
+}
 void createfile(char * filename)
 {
 	//loop through fat and find a spot with 0x00 in it
