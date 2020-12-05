@@ -31,9 +31,14 @@ rmdir: not implented
 cp -r FROM TO : not implemented
 
 
+README.md and GITLOG : Seth 
+
 /////////// GIT LOG ///////////
 PROVIDED IN TAR 
-
+may not accurately reflect how equally we worked on the assignment
+everytime we worked on it we met on zoom, screensharing so that we could
+pair program and tackle the problems together, other than exit info and size
+We equally kept each other accountable for sections and just code readability
 
 /////////// HOW TO COMPILE //////////
 'make'
