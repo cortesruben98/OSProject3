@@ -108,9 +108,15 @@ int main(int argc, char *argv[] )
 		if(f32.fileID==-1)
 		{
 			printf("ERROR: Opening %s failed.\n", argv[1]);
+			return 0;
 		}
 	}
-	f32.fileID = open("fat32.img", O_RDWR);
+	else
+	{
+		printf("ERROR: Incorrect number of arguments. Expected 1.\n");
+		return 0;
+	}
+	// f32.fileID = open("fat32.img", O_RDWR);
 	printf("file ID: %d\n", f32.fileID);
 	int i;
 	struct DIR_Entry aDir;
