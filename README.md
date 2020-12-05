@@ -7,7 +7,7 @@ makefile 	makefile for project3.c
 gitlog.txt	text file of our gitlog
 
 ///////// MAKEFILE DESCRIPTION ////////
-builds the executable "project3" and accepts fat32.img as param
+builds the executable "project3" and accepts a fat32.img as param
 compiles with c99 flag as a std, automatically cleans by 
 rm project3.o
 
@@ -23,6 +23,7 @@ mkdir: Seth pair programmed with Ruben and Teresa
 mv: Teresa pair programmed with Seth and Ruben
 open: Ruben pair programmed with Teresa and Seth
 close: Seth pair programmed with Ruben and Teresa
+lseek: not implemented 
 write: not implemented
 read: not implemented
 rm: not implemented
@@ -49,6 +50,10 @@ project3 fat32.img
 
 ////////// KNOWN BUGS //////////
 unimplemented sections listed above in division of labor
+creat: unable to create a new cluster if the current one is full. In this case a directory will not be made. 
+size: wont look past the first cluster of the directory.
+cd: wont look past the first cluster of the directory to find what its looking for.
+
 
 
 
