@@ -95,6 +95,9 @@ void createfile(char * filename);
 void openfile(char * filename, char * mode);
 void closefile(char * filename);
 
+
+////////// MAIN LOOP W PARSER FROM PART 1 /////////
+
 int main(int argc, char *argv[] )
 {
 
@@ -267,6 +270,10 @@ int main(int argc, char *argv[] )
 	return 0;
 }
 
+
+////////////// INFO FUNCTION ////////////////
+
+
 void info(){
 	printf("bytes per sector: %d\n", f32.BPB_BytesPerSec);
 	printf("sectors per cluster: %d\n", f32.BPB_SecPerClus);;
@@ -276,6 +283,10 @@ void info(){
 	printf("FATsize: %u\n", f32.BPB_FATSz32);
 	printf("root cluster: %d\n", f32.BPB_RootClus );
 }
+
+
+/////////////// SIZE FUNCTION /////////////
+
  
 void FileSize(char * filename){
 	unsigned char buffer[32];
@@ -287,7 +298,7 @@ void FileSize(char * filename){
 		return;
 	}
 
-// loop through CWD 32 bytes each directory content entry start at root dir
+	// loop through CWD 32 bytes each directory content entry start at root dir
 
 	//go to first data cluster of CWD
 	int j=0;
@@ -324,6 +335,11 @@ void FileSize(char * filename){
 
 
 }
+
+
+
+/////////////// LS FUNCTION //////////////
+
 
 
 void lsFunc(char * dirname){
@@ -425,6 +441,8 @@ void lsFunc(char * dirname){
 
 }
 
+
+//************* MKDIR FUNCTION ****************//
 
 
 void makingADir(char * dirname){
@@ -602,16 +620,28 @@ void free_tokens(tokenlist *tokens)
 /////////read function/////////
 //ssize_t read(int fildes, void *buf, size_t nbyte, off_t offset){
 
+
+//************ GET FAT REGION OFFSET ************//
+
+
 unsigned int GetFATOffset(int N)
 {
 	return (FirstFATSector* f32.BPB_BytesPerSec+ N * 4);
 }
+
+
+//************ GET DATA REGION OFFSET ****************//
+
 
 unsigned int GetDataOffset(int N) //returns sector offset in bytes 
 {
 
 	return (FirstDataSector + (N -2) * f32.BPB_SecPerClus)* f32.BPB_BytesPerSec;
 }
+
+
+//************ CD FUNCTION *************//
+
 
 void CD(char * directory)
 {
@@ -677,6 +707,10 @@ void CD(char * directory)
 	strcpy(CWD_NAME, temp_DIR.DIR_Name);
 }
 
+
+//****************** MV FUNCTION *******************//
+
+
 void MV(char * from, char * to)
 {
 	unsigned int lsclust_list[500];
@@ -735,6 +769,11 @@ void MV(char * from, char * to)
 	}
 
 }
+
+
+//****************** OPEN FUNCTION ******************//
+
+
 void openfile(char * filename, char * mode)
 {
 	unsigned int lsclust_list[500];
@@ -797,6 +836,11 @@ void openfile(char * filename, char * mode)
 
 
 }
+
+
+//***************** CLOSE FUNCTION ****************//
+
+
 void closefile(char * filename)
 {
 
@@ -811,6 +855,11 @@ void closefile(char * filename)
 	}
 	printf("File is not open\n");
 }
+
+
+//***************** CREATE FUNCTION *******************//
+
+
 void createfile(char * filename)
 {
 	//loop through fat and find a spot with 0x00 in it
@@ -890,6 +939,9 @@ void createfile(char * filename)
 	}
 	printf("Error: Out of space\n");
 }
+
+
+//************ BUILD LIST OF CWD CLUSTER FUNCTION **************//
 
 
 unsigned int * clusterlist(unsigned int clustnum){
