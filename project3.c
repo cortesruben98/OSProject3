@@ -63,15 +63,15 @@ struct DIR_Entry {
 }  __attribute__((packed));
 
 typedef struct {
-	char file_name[11];
-	char mode_spec;
+	char * file_name;
+	char * mode_spec;
 	unsigned int clusternum;
 
 } openfiledata;
 
 fileinfo f32;
 openfiledata openlist[40];
-openfilecount = 0; 
+int openfilecount = 0; 
 //test
 void info();
 void lsFunc(char * dirname);
@@ -741,7 +741,7 @@ void openfile(char * filename, char * mode)
 	int j=0;
 	unsigned int offset_temp=GetDataOffset(clust_list[j]);
 	//need to add second larger loop for the other clusters in list 
-	if(mode != "r" && mode != "w" && mode != "rw" && mode != "wr")
+	if(strcmp(mode,"r") && strcmp(mode,"w") && strcmp(mode,"rw") && strcmp(mode,"wr"))
 	{
 		printf("Invalid mode\n");
 		return;
@@ -795,7 +795,7 @@ void closefile(char * filename)
 {
 
 	int i;
-	for(i = 0; i < openfilecount; i++)
+	for(i = 0; i <= openfilecount; i++)
 	{
 		if(openlist[i].file_name == filename)
 		{
