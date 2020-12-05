@@ -185,12 +185,12 @@ int main(int argc, char *argv[] )
 		 */
 
 		char *input = get_input();
-		printf("whole input: %s\n", input);
+//		printf("whole input: %s\n", input);
 
 		tokenlist *tokens = get_tokens(input);
-		for (int i = 0; i < tokens->size; i++) {
-			printf("token %d: (%s)\n", i, tokens->items[i]);
-		}
+//		for (int i = 0; i < tokens->size; i++) {
+//			printf("token %d: (%s)\n", i, tokens->items[i]);
+//		}
 
 		if(!strcmp(tokens->items[0], "exit"))
 		{
