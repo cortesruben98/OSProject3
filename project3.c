@@ -70,7 +70,7 @@ typedef struct {
 } openfiledata;
 
 fileinfo f32;
-openfiledata[40];
+openfiledata openlist[40];
 openfilecount = 0; 
 //test
 void info();
@@ -92,7 +92,8 @@ unsigned int GetDataOffset(int N);
 void CD(char * directory);
 void MV(char * from, char * to);
 void createfile(char * filename);
-void openfile(char * filename);
+void openfile(char * filename, char * mode);
+void closefile(char * filename);
 int main()
 {
 	for(int i = 0; i < 500; i++){
@@ -207,33 +208,33 @@ int main()
 		}
 		else if(!strcmp(tokens->items[0],"open"))
 		{
-			openfile(tokens->items[1]);
+			openfile(tokens->items[1], tokens->items[2]);
 		}
-		else if(!strcmp(toekns->items[0],"close"))
+		else if(!strcmp(tokens->items[0],"close"))
 		{
 			closefile(tokens->items[1]);
 		}
-		else if(!strcmp(toekns->items[0],"lseek"))
+		else if(!strcmp(tokens->items[0],"lseek"))
 		{
 			printf("Not implemented");
 		}
-		else if(!strcmp(toekns->items[0],"read"))
+		else if(!strcmp(tokens->items[0],"read"))
 		{
 			printf("Not implemented");
 		}
-		else if(!strcmp(toekns->items[0],"write"))
+		else if(!strcmp(tokens->items[0],"write"))
 		{
 			printf("Not implemented");
 		}
-		else if(!strcmp(toekns->items[0],"rm"))
+		else if(!strcmp(tokens->items[0],"rm"))
 		{
 			printf("Not implemented");
 		}
-		else if(!strcmp(toekns->items[0],"cp"))
+		else if(!strcmp(tokens->items[0],"cp"))
 		{
 			printf("Not implemented");
 		}
-		else if(!strcmp(toekns->items[0],"rmdir"))
+		else if(!strcmp(tokens->items[0],"rmdir"))
 		{
 			printf("Not implemented");
 		}
@@ -260,8 +261,6 @@ void info(){
 	printf("FATsize: %u\n", f32.BPB_FATSz32);
 	printf("root cluster: %d\n", f32.BPB_RootClus );
 }
-
-int flipit(int origional); 
  
 void FileSize(char * filename){
 	unsigned char buffer[32];
@@ -733,7 +732,7 @@ void openfile(char * filename, char * mode)
 	int j=0;
 	unsigned int offset_temp=GetDataOffset(clust_list[j]);
 	//need to add second larger loop for the other clusters in list 
-	if(mode != 'r' && mode != 'w' && mode != "rw" && mode != "wr")
+	if(mode != "r" && mode != "w" && mode != "rw" && mode != "wr")
 	{
 		printf("Invalid mode\n");
 		return;
@@ -766,15 +765,15 @@ void openfile(char * filename, char * mode)
 			int i;
 			for(i = 0; i < openfilecount; i++)
 			{
-				if(openfiledata[i].file_name == filename)
+				if(openlist[i].file_name == filename)
 				{
 					printf("File Already Open\n");
 					return;
 				}
 			}
-			openfiledata[openfilecount].file_name = filename;
-			openfiledata[openfilecount].mode_spec = mode;
-			openfiledata[openfilecount].clusternum = temp_DIR.DIR_FstClusHI << 8 | temp_DIR.DIR_FstClusLO;
+			openlist[openfilecount].file_name = filename;
+			openlist[openfilecount].mode_spec = mode;
+			openlist[openfilecount].clusternum = temp_DIR.DIR_FstClusHI << 8 | temp_DIR.DIR_FstClusLO;
 			//need to write to file still *********************
 
 			return;
@@ -789,7 +788,7 @@ void closefile(char * filename)
 	int i;
 	for(i = 0; i < openfilecount; i++)
 	{
-		if(openfiledata[i].file_name == filename)
+		if(openlist[i].file_name == filename)
 		{
 			openfilecount--;
 			return;
