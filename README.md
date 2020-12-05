@@ -14,8 +14,8 @@ rm project3.o
 
 ///////// DIVISION OF LABOR /////////
 exit : Seth
-info : Teresa
-size : ruben
+info : Teresa pair programmed with Ruben and Teresa
+size : ruben pair programmed with Seth and Teresa
 ls : seth pair programmed with Ruben and Teresa 
 cd : ruben pair programmed with Seth and Teresa
 creat: Teresa pair programmed with Ruben and Seth
@@ -32,7 +32,7 @@ rmdir: not implented
 cp -r FROM TO : not implemented
 
 
-README.md and GITLOG : Seth 
+README.md and gitlog.txt : Seth 
 
 /////////// GIT LOG ///////////
 PROVIDED IN TAR 
