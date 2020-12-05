@@ -94,13 +94,22 @@ void MV(char * from, char * to);
 void createfile(char * filename);
 void openfile(char * filename, char * mode);
 void closefile(char * filename);
-int main()
+
+int main(int argc, char *argv[] )
 {
+
 	for(int i = 0; i < 500; i++){
 		rootcluster[i] = 0;
 	}
-	rootcluster[0] = f32.BPB_RootClus;
-
+	
+	if(argc ==2)
+	{
+		f32.fileID = open(argv[1], O_RDWR);
+		if(f32.fileID==-1)
+		{
+			printf("ERROR: Opening %s failed.\n", argv[1]);
+		}
+	}
 	f32.fileID = open("fat32.img", O_RDWR);
 	printf("file ID: %d\n", f32.fileID);
 	int i;
@@ -141,7 +150,7 @@ int main()
 
     FirstFATSector= f32.BPB_RsvdSecCnt;
     FirstDataSector=f32.BPB_RsvdSecCnt+ (f32.BPB_NumFATs* f32.BPB_FATSz32);
-
+    rootcluster[0] = f32.BPB_RootClus;
     //build CWD list 
 	pread(f32.fileID, buffer, 4, GetFATOffset(CWD_CLUSTNUM)); // get the contents of the CWD fat cluster into buffer 
 	temp = (unsigned int)buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0]; // endianness  into temp; 
